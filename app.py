@@ -5,7 +5,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 st.set_page_config(page_title="IA Pronos Football", page_icon="⚽", layout="centered")
 st.title("⚽ Application de Pronostics Foot par IA")
-st.write("Sélectionnez deux équipes pour obtenir l'analyse et le conseil automatique de l'algorithme.")
+st.write("Sélectionnez deux équipes pour obtenir l'analyse, la double chance et le conseil automatique.")
 
 @st.cache_data
 def charger_et_calculer_stats():
@@ -80,8 +80,10 @@ try:
                 p_D = proba_dict.get('D', 0) * 100
                 p_A = proba_dict.get('A', 0) * 100
                 
+                # Calcul précis des Doubles Chances
                 p_1X = p_H + p_D
                 p_X2 = p_D + p_A
+                p_12 = p_H + p_A
                 
                 p_over = model_goals.predict_proba(match_features)[0][1] * 100
                 p_under = 100 - p_over
@@ -102,20 +104,26 @@ try:
                 else:
                     st.error("⚖️ **Match très indécis : Pas de pronostic fiable recommandé (À éviter)**")
                 
-                # --- AFFICHAGE DES CHIFFRES ---
+                # --- AFFICHAGE DES CHIFFRES EN 3 COLONNES ---
                 st.markdown(f"### 📊 Détails des Analyses : {home_team} VS {away_team}")
                 
-                col_res1, col_res2 = st.columns(2)
+                col_res1, col_res2, col_res3 = st.columns(3)
                 with col_res1:
-                    st.markdown("#### 🎯 Résultat du Match (1X2)")
-                    st.write(f"🏠 Victoire {home_team} : **{p_H:.1f}%**")
-                    st.write(f"🤝 Match Nul : **{p_D:.1f}%**")
-                    st.write(f"✈️ Victoire {away_team} : **{p_A:.1f}%**")
+                    st.markdown("#### 🎯 Résultat (1X2)")
+                    st.write(f"🏠 Victoire : **{p_H:.1f}%**")
+                    st.write(f"🤝 Nul : **{p_D:.1f}%**")
+                    st.write(f"✈️ Victoire : **{p_A:.1f}%**")
                 
                 with col_res2:
-                    st.markdown("#### ⚽ Nombre de Buts (+/- 2.5)")
-                    st.write(f"🔥 Plus de 2.5 buts : **{p_over:.1f}%**")
-                    st.write(f"🥶 Moins de 2.5 buts : **{p_under:.1f}%**")
+                    st.markdown("#### 🛡️ Double Chance")
+                    st.write(f"🤞 **1X** : **{p_1X:.1f}%**")
+                    st.write(f"🤞 **X2** : **{p_X2:.1f}%**")
+                    st.write(f"💥 **12** : **{p_12:.1f}%**")
+                
+                with col_res3:
+                    st.markdown("#### ⚽ Buts (+/- 2.5)")
+                    st.write(f"🔥 Plus de 2.5 : **{p_over:.1f}%**")
+                    st.write(f"🥶 Moins de 2.5 : **{p_under:.1f}%**")
                     
 except FileNotFoundError:
     st.error("Fichier de données 'data_ia.csv' introuvable.")
